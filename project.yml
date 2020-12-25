@@ -1,0 +1,46 @@
+name: Example
+options:
+  deploymentTarget:
+    iOS: 13.0
+  developmentLanguage: ru
+  knownRegions: ["ru", "Base"]
+  createIntermediateGroups: true
+attributes:
+  ORGANIZATIONNAME: Heads and Hands
+settings:
+  base:
+    VERSIONING_SYSTEM: apple-generic
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: 5.0
+    DEVELOPMENT_TEAM: X86NQK83T7
+    CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER: YES
+  configs:
+    Debug:
+      OTHER_SWIFT_FLAGS: -D DEBUG
+    Release:
+      OTHER_SWIFT_FLAGS: -D RELEASE
+      SWIFT_COMPILATION_MODE: wholemodule
+targets:
+  Example:
+    type: application
+    platform: iOS
+    dependencies:
+      - package: NetworkLayer
+    sources:
+      - path: Example
+    attributes:
+      ProvisioningStyle: Manual
+      DevelopmentTeam: X86NQK83T7
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        PRODUCT_BUNDLE_IDENTIFIER: ru.handh.libs.networklayer
+      configs:
+        Debug:
+          CODE_SIGN_IDENTITY: "iPhone Developer"
+        Release:
+          CODE_SIGN_IDENTITY: "iPhone Distribution"
+          CODE_SIGN_IDENTITY[sdk=iphoneos*]: "iPhone Distribution"
+packages:
+    NetworkLayer:
+        path: ./

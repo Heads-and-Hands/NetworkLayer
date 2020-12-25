@@ -1,0 +1,3 @@
+import Alamofire
+
+public typealias URLEncodedFormParameterEncoder = Alamofire.URLEncodedFormParameterEncoder
