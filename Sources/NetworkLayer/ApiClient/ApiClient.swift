@@ -25,6 +25,7 @@ public class ApiClient {
         }
 
         return session.request(request)
+            .validate(statusCode: 100 ..< 400)
             .publishDecodable(type: T.self, queue: .global(), decoder: decoder)
             .tryMap { response in
                 switch response.result {
