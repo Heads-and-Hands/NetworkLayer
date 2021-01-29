@@ -6,6 +6,7 @@ open class RequestBuilder {
     private let urlEncoder: URLEncodedFormParameterEncoder
     private let jsonEncoder: JSONEncoder
     private let plugins: [RequestBuilderPlugin]
+    private let debugMode: Bool
 
     private var host: String {
         configuration.serverHost
@@ -15,12 +16,14 @@ open class RequestBuilder {
         configuration: RequestBuilderConfiguration,
         urlEncoder: URLEncodedFormParameterEncoder,
         jsonEncoder: JSONEncoder,
-        plugins: [RequestBuilderPlugin]
+        plugins: [RequestBuilderPlugin],
+        debugMode: Bool
     ) {
         self.configuration = configuration
         self.urlEncoder = urlEncoder
         self.jsonEncoder = jsonEncoder
         self.plugins = plugins
+        self.debugMode = debugMode
     }
 
     open func make(method: HTTPMethod, path: String) -> URLRequestHolder {
@@ -33,7 +36,8 @@ open class RequestBuilder {
         let holder = RequestBuilder.Request(
             urlRequest: urlRequest,
             urlEncoder: urlEncoder,
-            jsonEncoder: jsonEncoder
+            jsonEncoder: jsonEncoder,
+            debugMode: debugMode
         )
 
         plugins.forEach {
@@ -50,15 +54,18 @@ private extension RequestBuilder {
 
         private let urlEncoder: URLEncodedFormParameterEncoder
         private let jsonEncoder: JSONEncoder
+        private let debugMode: Bool
 
         init(
             urlRequest: URLRequest?,
             urlEncoder: URLEncodedFormParameterEncoder,
-            jsonEncoder: JSONEncoder
+            jsonEncoder: JSONEncoder,
+            debugMode: Bool
         ) {
             self.urlRequest = urlRequest
             self.urlEncoder = urlEncoder
             self.jsonEncoder = jsonEncoder
+            self.debugMode = debugMode
         }
 
         func add<T: Encodable>(urlParameters: T, customEncoder: URLEncodedFormParameterEncoder?) -> URLRequestHolder {
@@ -79,6 +86,10 @@ private extension RequestBuilder {
         }
 
         func mock(config: ((URLRequest) -> RequestMock)?) -> URLRequestHolder {
+            guard debugMode else {
+                return self
+            }
+
             guard let request = urlRequest, let config = config else {
                 return self
             }
