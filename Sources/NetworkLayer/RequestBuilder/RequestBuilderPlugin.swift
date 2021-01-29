@@ -7,6 +7,6 @@
 
 import Foundation
 
-protocol RequestBuilderPlugin {
+public protocol RequestBuilderPlugin {
     func prepare(requestHolder: URLRequestHolder)
 }
