@@ -8,15 +8,18 @@ public class ApiClient {
     private let requestBuilder: RequestBuilder
     private let session: Session
     private let decoder: JSONDecoder
+    private let finishableIntercepter: ApiClientFinishableInterceptor?
 
     public init(
         requestBuilder: RequestBuilder,
         session: Session,
-        decoder: JSONDecoder
+        decoder: JSONDecoder,
+        finishableIntercepter: ApiClientFinishableInterceptor?
     ) {
         self.requestBuilder = requestBuilder
         self.session = session
         self.decoder = decoder
+        self.finishableIntercepter = finishableIntercepter
     }
 
     public func performRequest<T: ApiClientResponse>(requestFactory: (RequestBuilder) -> URLRequestHolder?) -> ApiClient.Result<T> {
@@ -24,15 +27,21 @@ public class ApiClient {
             return Future { $0(.failure(.internal(error: .badRequest))) }.eraseToAnyPublisher()
         }
 
-        return session.request(request)
+        return session.request(request, interceptor: session.interceptor)
             .validate(statusCode: 100 ..< 400)
             .publishDecodable(type: T.self, queue: .global(), decoder: decoder)
-            .tryMap { response in
+            .tryMap { [weak self] response in
                 switch response.result {
                 case let .success(value):
+                    guard let statusCode = response.response?.statusCode else {
+                        throw ApiClientError<T>.internal(error: .responseNotFound)
+                    }
+
                     if let data = value.data {
+                        self?.finishableIntercepter?.finish(request, responseData: data, statusCode: statusCode)
                         return data
-                    } else if let error = value.error, let statusCode = response.response?.statusCode {
+                    } else if let error = value.error {
+                        self?.finishableIntercepter?.finish(request, responseData: error, statusCode: statusCode)
                         throw ApiClientError<T>.server(statusCode: statusCode, responseError: error)
                     }
                 case let .failure(error):
