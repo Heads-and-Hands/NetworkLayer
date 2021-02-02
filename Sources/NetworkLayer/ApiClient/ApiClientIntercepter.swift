@@ -42,7 +42,11 @@ private class RetrierContainer {
 }
 
 public class ApiClientExpiredTokenIntercepter: RequestInterceptor, ApiClientFinishableInterceptor {
+    public static let shared = ApiClientExpiredTokenIntercepter()
+
     public weak var delegate: ApiClientIntercepterDelegate?
+
+    private init() {}
 
     public func finish<T>(_ request: URLRequest, responseData: T?, statusCode: Int) {
         guard let delegate = delegate, statusCode != 401 else {
