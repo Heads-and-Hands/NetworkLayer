@@ -6,7 +6,6 @@ open class RequestBuilder {
     private let urlEncoder: URLEncodedFormParameterEncoder
     private let jsonEncoder: JSONEncoder
     private let plugins: [RequestBuilderPlugin]
-    private let debugMode: Bool
 
     private var host: String {
         configuration.serverHost
@@ -16,14 +15,12 @@ open class RequestBuilder {
         configuration: RequestBuilderConfiguration,
         urlEncoder: URLEncodedFormParameterEncoder,
         jsonEncoder: JSONEncoder,
-        plugins: [RequestBuilderPlugin],
-        debugMode: Bool
+        plugins: [RequestBuilderPlugin]
     ) {
         self.configuration = configuration
         self.urlEncoder = urlEncoder
         self.jsonEncoder = jsonEncoder
         self.plugins = plugins
-        self.debugMode = debugMode
     }
 
     open func make(method: HTTPMethod, path: String) -> URLRequestHolder {
@@ -37,7 +34,7 @@ open class RequestBuilder {
             urlRequest: urlRequest,
             urlEncoder: urlEncoder,
             jsonEncoder: jsonEncoder,
-            debugMode: debugMode
+            debugMode: configuration.debugMode
         )
 
         plugins.forEach {
