@@ -28,7 +28,7 @@ public class ApiClient {
         }
 
         return session.request(request, interceptor: session.interceptor)
-//            .validate(statusCode: 100 ..< 400)
+            .validate(statusCode: 100 ..< 400)
             .publishDecodable(type: T.self, queue: .global(), decoder: decoder)
             .tryMap { [weak self] response in
                 switch response.result {
@@ -45,6 +45,13 @@ public class ApiClient {
                         throw ApiClientError<T>.server(statusCode: statusCode, responseError: error)
                     }
                 case let .failure(error):
+                    if error.isResponseValidationError,
+                        let data = response.data,
+                        let decodedResponse = try? self?.decoder.decode(T.self, from: data),
+                        let statusCode = response.response?.statusCode,
+                        let errorData = decodedResponse.error {
+                        throw ApiClientError<T>.server(statusCode: statusCode, responseError: errorData)
+                    }
                     throw ApiClientError<T>.network(error: error)
                 }
 
