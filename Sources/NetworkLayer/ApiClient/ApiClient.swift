@@ -27,9 +27,31 @@ public class ApiClient {
             return Future { $0(.failure(.internal(error: .badRequest))) }.eraseToAnyPublisher()
         }
 
-        return session.request(request, interceptor: session.interceptor)
+        let publisher = session.request(request, interceptor: session.interceptor)
             .validate(statusCode: 100 ..< 400)
             .publishDecodable(type: T.self, queue: .global(), decoder: decoder)
+
+        return handle(publisher: publisher, request: request)
+    }
+
+    public func performUploadRequest<T: ApiClientResponse>(
+        requestFactory: (RequestBuilder) -> (request: URLRequestHolder, uploadForm: MultipartFormData)?
+    ) -> ApiClient.Result<T> {
+        guard let requestData = requestFactory(requestBuilder),
+              let request = requestData.request.urlRequest else {
+            return Future { $0(.failure(.internal(error: .badRequest))) }.eraseToAnyPublisher()
+        }
+
+        let publisher = session
+            .upload(multipartFormData: requestData.uploadForm, with: request, interceptor: session.interceptor)
+            .validate(statusCode: 100 ..< 400)
+            .publishDecodable(type: T.self, queue: .global(), decoder: decoder)
+
+        return handle(publisher: publisher, request: request)
+    }
+
+    private func handle<T>(publisher: DataResponsePublisher<T>, request: URLRequest) -> ApiClient.Result<T> {
+        publisher
             .tryMap { [weak self] response in
                 switch response.result {
                 case let .success(value):
@@ -46,10 +68,10 @@ public class ApiClient {
                     }
                 case let .failure(error):
                     if error.isResponseValidationError,
-                        let data = response.data,
-                        let decodedResponse = try? self?.decoder.decode(T.self, from: data),
-                        let statusCode = response.response?.statusCode,
-                        let errorData = decodedResponse.error {
+                       let data = response.data,
+                       let decodedResponse = try? self?.decoder.decode(T.self, from: data),
+                       let statusCode = response.response?.statusCode,
+                       let errorData = decodedResponse.error {
                         throw ApiClientError<T>.server(statusCode: statusCode, responseError: errorData)
                     }
                     throw ApiClientError<T>.network(error: error)
