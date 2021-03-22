@@ -24,6 +24,10 @@ public enum ApiClientResponseDataType {
     case newUser
 }
 
+public protocol ApiClientAdaptProvider: AnyObject {
+    func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void)
+}
+
 public protocol ApiClientIntercepterDelegate: AnyObject {
     func validate(request: URLRequest) -> ApiClientRequestType
     func validate<T>(reponseData: T?) -> ApiClientResponseDataType
@@ -45,6 +49,8 @@ public class ApiClientExpiredTokenIntercepter: RequestInterceptor, ApiClientFini
     public static let shared = ApiClientExpiredTokenIntercepter()
 
     public weak var delegate: ApiClientIntercepterDelegate?
+
+    public weak var adaptProvider: ApiClientAdaptProvider?
 
     private init() {}
 
@@ -72,6 +78,14 @@ public class ApiClientExpiredTokenIntercepter: RequestInterceptor, ApiClientFini
                 return
             }
         }
+    }
+
+    public func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
+        guard let adaptProvider = adaptProvider else {
+            completion(.success(urlRequest))
+            return
+        }
+        adaptProvider.adapt(urlRequest, for: session, completion: completion)
     }
 
     public func retry(_ request: Request, for _: Session, dueTo error: Error, completion: @escaping (RetryResult) -> Void) {
