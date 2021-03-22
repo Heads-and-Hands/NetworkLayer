@@ -43,6 +43,14 @@ open class RequestBuilder {
 
         return holder
     }
+
+    open func refresh(holder: URLRequestHolder) -> URLRequestHolder {
+        plugins.forEach {
+            $0.prepare(requestHolder: holder)
+        }
+
+        return holder
+    }
 }
 
 private extension RequestBuilder {
