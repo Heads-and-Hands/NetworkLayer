@@ -44,12 +44,19 @@ open class RequestBuilder {
         return holder
     }
 
-    open func refresh(holder: URLRequestHolder) -> URLRequestHolder {
+    open func refresh(urlRequest: URLRequest) -> URLRequest {
+        let holder = RequestBuilder.Request(
+            urlRequest: urlRequest,
+            urlEncoder: urlEncoder,
+            jsonEncoder: jsonEncoder,
+            debugMode: configuration.debugMode
+        )
+
         plugins.forEach {
             $0.prepare(requestHolder: holder)
         }
 
-        return holder
+        return holder.urlRequest ?? urlRequest
     }
 }
 
