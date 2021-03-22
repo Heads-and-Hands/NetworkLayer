@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by basalaev on 01.02.2021.
 //
@@ -27,6 +27,7 @@ public enum ApiClientResponseDataType {
 public protocol ApiClientIntercepterDelegate: AnyObject {
     func validate(request: URLRequest) -> ApiClientRequestType
     func validate<T>(reponseData: T?) -> ApiClientResponseDataType
+    func refresh(urlRequest: URLRequest) -> URLRequest
 
     func didExpiredToken()
 }
@@ -87,8 +88,14 @@ public class ApiClientExpiredTokenIntercepter: RequestInterceptor, ApiClientFini
 
         switch delegate.validate(request: urlRequest) {
         case .`default`:
-            queue.async { [weak self] in
-                self?.containers.append(RetrierContainer(request: urlRequest, completion: completion))
+            queue.async { [weak self, weak delegate] in
+                guard let delegate = delegate else {
+                    completion(.doNotRetry)
+                    return
+                }
+
+                let request = delegate.refresh(urlRequest: urlRequest)
+                self?.containers.append(RetrierContainer(request: request, completion: completion))
             }
         default:
             completion(.doNotRetry)
