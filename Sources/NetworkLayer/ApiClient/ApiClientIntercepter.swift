@@ -59,7 +59,9 @@ public class ApiClientExpiredTokenIntercepter: RequestInterceptor, ApiClientFini
             return
         }
 
-        queue.async { [weak self] in
+        // TODO: - Временный костыль. ApiClient вызывает finish до того как сработает sink у паблишера
+        // выполняемого запроса. Как итог - запросы повторяются со старым токеном
+        queue.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             guard let self = self, !self.containers.isEmpty else {
                 return
             }
