@@ -111,6 +111,9 @@ public class ApiClientExpiredTokenIntercepter: RequestInterceptor, ApiClientFini
 
     private func drainContainers(with retryResult: RetryResult) {
         containers.forEach { $0.completion(retryResult) }
-        containers.removeAll()
+
+        queue.async { [weak self] in
+            self?.containers.removeAll()
+        }
     }
 }
