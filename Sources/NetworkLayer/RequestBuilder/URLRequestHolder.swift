@@ -7,6 +7,7 @@ public protocol URLRequestHolder: AnyObject {
     func add<T: Encodable>(urlParameters: T, customEncoder: URLEncodedFormParameterEncoder?) -> URLRequestHolder
     func set<T: Encodable>(body: T, customEncoder: JSONEncoder?) -> URLRequestHolder
     func add(header: String, value: String) -> URLRequestHolder
+    func set(timeout: TimeInterval) -> URLRequestHolder
 
     func mock(config: ((URLRequest) -> RequestMock)?) -> URLRequestHolder
 }
