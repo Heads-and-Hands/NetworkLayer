@@ -82,6 +82,11 @@ private extension RequestBuilder {
             return self
         }
 
+        func set(timeout: TimeInterval) -> URLRequestHolder {
+            urlRequest?.timeoutInterval = timeout
+            return self
+        }
+
         func mock(config: ((URLRequest) -> RequestMock)?) -> URLRequestHolder {
             guard debugMode else {
                 return self
