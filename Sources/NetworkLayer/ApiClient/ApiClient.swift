@@ -2,7 +2,7 @@ import Alamofire
 import Combine
 import Foundation
 
-public class ApiClient {
+open class ApiClient {
     public typealias Result<T: ApiClientResponse> = AnyPublisher<T.ResponseData, ApiClientError<T>>
 
     private let requestBuilder: RequestBuilder
