@@ -12,7 +12,7 @@ let package = Package(
             targets: ["NetworkLayer"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/BugorBN/Alamofire", from: "5.5.1")
+        .package(url: "https://github.com/Alamofire/Alamofire", from: "5.2.2")
     ],
     targets: [
         .target(
