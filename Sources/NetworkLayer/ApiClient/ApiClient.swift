@@ -43,7 +43,7 @@ public class ApiClient {
                     } else if let error = value.error {
                         self?.finishableIntercepter?.finish(request, responseData: error, statusCode: statusCode)
                         throw ApiClientError<T>.server(statusCode: statusCode, responseError: error)
-                    } else if let emptyData = EmptyData() as? T.ResponseData {
+                    } else if let emptyData = ApiClientEmptyData() as? T.ResponseData {
                         return emptyData
                     }
                 case let .failure(error):

@@ -1,7 +1,7 @@
 import Alamofire
 
 struct ApiClientEmptyResponse<ResponseError: Error & Decodable>: ApiClientResponse {
-    let data: EmptyData?
+    let data: ApiClientEmptyData?
     let error: ResponseError?
 
     init() {
