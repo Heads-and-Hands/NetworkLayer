@@ -1,3 +1,3 @@
 import Foundation
 
-struct ApiClientEmptyData: Decodable {}
+public struct ApiClientEmptyData: Decodable {}
