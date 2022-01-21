@@ -1,6 +1,6 @@
 import Alamofire
 
-struct EmptyResponse<ResponseError: Error & Decodable>: ApiClientResponse {
+struct ApiClientEmptyResponse<ResponseError: Error & Decodable>: ApiClientResponse {
     let data: EmptyData?
     let error: ResponseError?
 
@@ -10,8 +10,8 @@ struct EmptyResponse<ResponseError: Error & Decodable>: ApiClientResponse {
     }
 }
 
-extension EmptyResponse: Alamofire.EmptyResponse {
-    static func emptyValue() -> EmptyResponse<ResponseError> {
-        EmptyResponse()
+extension ApiClientEmptyResponse: Alamofire.EmptyResponse {
+    static func emptyValue() -> ApiClientEmptyResponse<ResponseError> {
+        ApiClientEmptyResponse()
     }
 }
