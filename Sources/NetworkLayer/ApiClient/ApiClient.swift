@@ -29,7 +29,7 @@ public class ApiClient {
 
         return session.request(request, interceptor: session.interceptor)
             .validate(statusCode: 100 ..< 400)
-            .publishDecodable(type: T.self, queue: .global(), decoder: decoder)
+            .publishDecodable(type: T.self, queue: .global(), decoder: decoder, emptyResponseMethods: [.post, .head])
             .tryMap { [weak self] response in
                 switch response.result {
                 case let .success(value):
@@ -43,6 +43,8 @@ public class ApiClient {
                     } else if let error = value.error {
                         self?.finishableIntercepter?.finish(request, responseData: error, statusCode: statusCode)
                         throw ApiClientError<T>.server(statusCode: statusCode, responseError: error)
+                    } else if let emptyData = ApiClientEmptyData() as? T.ResponseData {
+                        return emptyData
                     }
                 case let .failure(error):
                     if error.isResponseValidationError,
