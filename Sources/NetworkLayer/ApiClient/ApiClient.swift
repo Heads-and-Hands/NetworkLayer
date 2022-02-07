@@ -29,7 +29,7 @@ public class ApiClient {
 
         return session.request(request, interceptor: session.interceptor)
             .validate(statusCode: 100 ..< 400)
-            .publishDecodable(type: T.self, queue: .global(), decoder: decoder, emptyRequestMethods: [.post, .head])
+            .publishDecodable(type: T.self, queue: .global(), decoder: decoder, emptyResponseMethods: [.post, .head])
             .tryMap { [weak self] response in
                 switch response.result {
                 case let .success(value):
