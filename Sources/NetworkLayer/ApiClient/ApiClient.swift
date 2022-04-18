@@ -9,14 +9,17 @@ open class ApiClient {
     private let session: Session
     private let decoder: JSONDecoder
     private let finishableIntercepter: ApiClientFinishableInterceptor?
+    private let errorLogger: ((Error) -> Void)?
 
     public init(
         requestBuilder: RequestBuilder,
+        errorLogger: ((Error) -> Void)? = nil,
         session: Session,
         decoder: JSONDecoder,
         finishableIntercepter: ApiClientFinishableInterceptor?
     ) {
         self.requestBuilder = requestBuilder
+        self.errorLogger = errorLogger
         self.session = session
         self.decoder = decoder
         self.finishableIntercepter = finishableIntercepter
@@ -79,12 +82,15 @@ open class ApiClient {
 
                 throw ApiClientError<T>.internal(error: .responseNotFound)
             }
-            .mapError { error -> ApiClientError<T> in
+            .mapError { [weak self] error -> ApiClientError<T> in
+                let result: ApiClientError<T>
                 if let apiClientError = error as? ApiClientError<T> {
-                    return apiClientError
+                    result = apiClientError
                 } else {
-                    return ApiClientError<T>.network(error: error)
+                    result = ApiClientError<T>.network(error: error)
                 }
+                self?.errorLogger?(result)
+                return result
             }
             .eraseToAnyPublisher()
     }
