@@ -10,6 +10,7 @@ import Alamofire
 
 public protocol ApiClientFinishableInterceptor {
     func finish<T>(_ request: URLRequest, responseData: T?, statusCode: Int)
+    func drainContainers(with retryResult: RetryResult)
 }
 
 public enum ApiClientRequestType {
@@ -111,6 +112,14 @@ public class ApiClientExpiredTokenIntercepter: RequestInterceptor, ApiClientFini
         }
     }
 
+    public func drainContainers(with retryResult: RetryResult) {
+        containers.forEach { $0.completion(retryResult) }
+
+        queue.async { [weak self] in
+            self?.containers.removeAll()
+        }
+    }
+
     // MARK: - Private
 
     private let queue = DispatchQueue(label: "expired-token-queue")
@@ -122,14 +131,6 @@ public class ApiClientExpiredTokenIntercepter: RequestInterceptor, ApiClientFini
                     self?.delegate?.didExpiredToken()
                 }
             }
-        }
-    }
-
-    private func drainContainers(with retryResult: RetryResult) {
-        containers.forEach { $0.completion(retryResult) }
-
-        queue.async { [weak self] in
-            self?.containers.removeAll()
         }
     }
 }
